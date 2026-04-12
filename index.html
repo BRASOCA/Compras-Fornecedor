@@ -3,34 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendário de Compras</title>
-    <!-- Importando Tailwind CSS para estilização rápida e moderna -->
+    <title>Calendário de Compras Avançado</title>
+    <!-- Importando Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Importando Phosphor Icons para os ícones -->
+    <!-- Importando Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        /* Estilos customizados para a barra de rolagem do calendário */
-        .calendar-cell {
-            min-height: 100px;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 20px;
-        }
-        /* Efeito de fade in para o modal */
+        .calendar-cell { min-height: 110px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
-        .modal-animate {
-            animation: fadeIn 0.2s ease-out forwards;
-        }
+        .modal-animate { animation: fadeIn 0.2s ease-out forwards; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
@@ -39,61 +26,104 @@
     <header class="bg-indigo-600 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
             <i class="ph ph-calendar-check text-3xl"></i>
-            <h1 class="text-2xl font-bold">Gestão de Compras com Fornecedores</h1>
+            <div>
+                <h1 class="text-2xl font-bold">Gestão Avançada de Compras</h1>
+                <p class="text-indigo-200 text-sm">Controle de Fornecedores, Itens e Logística</p>
+            </div>
         </div>
     </header>
 
     <!-- Conteúdo Principal -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <!-- Painel Lateral: Formulário de Nova Compra -->
+        <!-- Painel Lateral: Formulário -->
         <section class="lg:col-span-4 space-y-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
-                    <i class="ph ph-plus-circle text-2xl"></i>
-                    Agendar Nova Compra
+                <h2 class="text-xl font-semibold mb-5 flex items-center gap-2 text-indigo-700 border-b border-slate-100 pb-3">
+                    <i class="ph ph-shopping-cart-simple text-2xl"></i>
+                    Nova Compra
                 </h2>
                 
-                <form id="purchaseForm" class="space-y-4">
-                    <div>
-                        <label for="dataCompra" class="block text-sm font-medium text-slate-700 mb-1">Data da Compra</label>
-                        <input type="date" id="dataCompra" required
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                <form id="purchaseForm" class="space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Data</label>
+                            <input type="date" id="dataCompra" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Fornecedor</label>
+                            <input type="text" id="fornecedor" list="listaFornecedores" placeholder="Ex: Fornecedor XYZ" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <datalist id="listaFornecedores">
+                                <option value="Atacadão das Embalagens">
+                                <option value="Tech Solutions">
+                                <option value="Distribuidora Central">
+                            </datalist>
+                        </div>
                     </div>
 
-                    <div>
-                        <label for="fornecedor" class="block text-sm font-medium text-slate-700 mb-1">Fornecedor</label>
-                        <!-- Usando datalist para permitir digitação livre ou seleção de opções anteriores -->
-                        <input type="text" id="fornecedor" list="listaFornecedores" placeholder="Ex: Distribuidora XYZ" required
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
-                        <datalist id="listaFornecedores">
-                            <option value="Atacadão das Embalagens">
-                            <option value="Tech Solutions">
-                            <option value="Distribuidora Central">
-                            <option value="Móveis & Cia">
-                        </datalist>
+                    <!-- Seção de Produtos Dinâmica -->
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Itens Comprados</label>
+                        <div id="produtosList" class="space-y-2">
+                            <!-- Template do primeiro item (fixo) -->
+                            <div class="produto-item flex flex-wrap sm:flex-nowrap gap-2 items-center">
+                                <input type="text" class="prod-nome flex-1 min-w-[120px] px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Nome do Item (Ex: Frigideira)" required>
+                                <input type="number" class="prod-qtd w-20 px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Qtd" min="1" required>
+                                <div class="relative w-28">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-500 text-xs font-bold">R$</span>
+                                    <input type="number" class="prod-valor w-full pl-7 pr-2 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="0.00" step="0.01" min="0" required oninput="calcularTotalForm()">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="btnAddProduto" class="text-sm text-indigo-600 hover:text-indigo-800 font-bold mt-3 flex items-center gap-1 transition-colors">
+                            <i class="ph ph-plus-circle text-lg"></i> Adicionar outro item
+                        </button>
                     </div>
 
+                    <!-- Seção de Logística -->
                     <div>
-                        <label for="produto" class="block text-sm font-medium text-slate-700 mb-1">Produto(s)</label>
-                        <input type="text" id="produto" placeholder="Ex: 50x Caixas de Papelão" required
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Custo de Logística</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                                <i class="ph ph-truck text-lg"></i>
+                            </div>
+                            <select id="logistica" onchange="calcularTotalForm()" class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 appearance-none bg-white font-medium text-slate-700">
+                                <option value="0" data-nome="Nenhuma">Nenhuma - R$ 0,00</option>
+                                <option value="1.20" data-nome="Apenas Etiqueta">Apenas Etiqueta - R$ 1,20</option>
+                                <option value="2.00" data-nome="Apenas Embalagem">Apenas Embalagem - R$ 2,00</option>
+                                <option value="2.00" data-nome="Apenas Kit">Apenas Kit - R$ 2,00</option>
+                                <option value="2.50" data-nome="Kit + Embalagem">Kit + Embalagem - R$ 2,50</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <button type="submit" 
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2">
-                        <i class="ph ph-floppy-disk text-lg"></i>
-                        Salvar no Calendário
+                    <!-- Total Visível -->
+                    <div class="bg-indigo-50 p-4 rounded-lg flex justify-between items-center border border-indigo-100">
+                        <span class="text-indigo-800 font-medium">Valor Total:</span>
+                        <span id="displayTotalForm" class="text-2xl font-bold text-indigo-700">R$ 0,00</span>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <i class="ph ph-check-circle text-xl"></i>
+                        Agendar e Salvar
                     </button>
                 </form>
             </div>
 
-            <!-- Resumo Rápido -->
+            <!-- Resumo Financeiro do Mês -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 class="text-lg font-semibold mb-3 text-slate-800">Resumo do Mês</h3>
-                <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                    <span class="text-slate-600">Total de Pedidos</span>
-                    <span id="totalPedidosMes" class="font-bold text-indigo-600 text-lg">0</span>
+                <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2">
+                    <i class="ph ph-chart-line-up text-indigo-600"></i> Resumo do Mês
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-slate-600 font-medium">Qtd. de Pedidos</span>
+                        <span id="totalPedidosMes" class="font-bold text-slate-800 text-lg">0</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-slate-600 font-medium">Gasto Estimado</span>
+                        <span id="totalValorMes" class="font-black text-emerald-600 text-xl">R$ 0,00</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -101,57 +131,55 @@
         <!-- Painel Principal: Calendário -->
         <section class="lg:col-span-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col">
             
-            <!-- Controles do Calendário -->
             <div class="flex items-center justify-between mb-6">
-                <h2 id="mesAnoAtual" class="text-2xl font-bold text-slate-800 capitalize">Abril 2026</h2>
+                <h2 id="mesAnoAtual" class="text-2xl font-black text-slate-800 capitalize">Abril 2026</h2>
                 <div class="flex gap-2">
-                    <button id="btnPrevMonth" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors">
-                        <i class="ph ph-caret-left text-xl"></i>
-                    </button>
-                    <button id="btnHoje" class="px-4 py-2 rounded-lg hover:bg-slate-100 text-slate-700 font-medium transition-colors border border-slate-200">
-                        Hoje
-                    </button>
-                    <button id="btnNextMonth" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors">
-                        <i class="ph ph-caret-right text-xl"></i>
-                    </button>
+                    <button id="btnPrevMonth" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-caret-left text-xl"></i></button>
+                    <button id="btnHoje" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors">Hoje</button>
+                    <button id="btnNextMonth" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-caret-right text-xl"></i></button>
                 </div>
             </div>
 
-            <!-- Grade do Calendário -->
             <div class="flex-grow">
-                <!-- Dias da Semana -->
-                <div class="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-t-lg overflow-hidden">
-                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Dom</div>
-                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Seg</div>
-                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Ter</div>
-                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Qua</div>
-                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Qui</div>
-                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Sex</div>
-                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Sáb</div>
+                <div class="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-t-xl overflow-hidden">
+                    <div class="bg-slate-50 py-3 text-center text-sm font-bold text-slate-500 uppercase tracking-wider">Dom</div>
+                    <div class="bg-slate-50 py-3 text-center text-sm font-bold text-slate-500 uppercase tracking-wider">Seg</div>
+                    <div class="bg-slate-50 py-3 text-center text-sm font-bold text-slate-500 uppercase tracking-wider">Ter</div>
+                    <div class="bg-slate-50 py-3 text-center text-sm font-bold text-slate-500 uppercase tracking-wider">Qua</div>
+                    <div class="bg-slate-50 py-3 text-center text-sm font-bold text-slate-500 uppercase tracking-wider">Qui</div>
+                    <div class="bg-slate-50 py-3 text-center text-sm font-bold text-slate-500 uppercase tracking-wider">Sex</div>
+                    <div class="bg-slate-50 py-3 text-center text-sm font-bold text-slate-500 uppercase tracking-wider">Sáb</div>
                 </div>
-                <!-- Células dos Dias -->
-                <div id="calendarGrid" class="grid grid-cols-7 gap-px bg-slate-200 border-x border-b border-slate-200 rounded-b-lg">
+                <div id="calendarGrid" class="grid grid-cols-7 gap-px bg-slate-200 border-x border-b border-slate-200 rounded-b-xl">
                     <!-- Gerado via JavaScript -->
                 </div>
             </div>
-
         </section>
     </main>
 
     <!-- Modal de Detalhes do Dia -->
-    <div id="dayModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full modal-animate">
-            <div class="flex items-center justify-between p-5 border-b border-slate-100">
-                <h3 id="modalTitle" class="text-xl font-bold text-slate-800">Compras do dia</h3>
-                <button id="closeModal" class="p-1 rounded-md hover:bg-slate-100 text-slate-500 transition-colors">
+    <div id="dayModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full modal-animate flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
+                <div>
+                    <h3 id="modalTitle" class="text-xl font-black text-slate-800">Compras do dia</h3>
+                    <p id="modalSubtitle" class="text-sm text-slate-500 mt-1"></p>
+                </div>
+                <button id="closeModal" class="p-2 rounded-lg hover:bg-slate-200 text-slate-500 transition-colors">
                     <i class="ph ph-x text-xl"></i>
                 </button>
             </div>
-            <div id="modalContent" class="p-5 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-3">
+            
+            <div id="modalContent" class="p-5 overflow-y-auto custom-scrollbar space-y-4 flex-grow bg-slate-50/50">
                 <!-- Conteúdo gerado via JS -->
             </div>
-            <div class="p-5 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-end">
-                <button id="closeModalBtn" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition-colors">
+            
+            <div class="p-5 border-t border-slate-200 bg-white rounded-b-2xl flex justify-between items-center shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+                <div>
+                    <span class="text-slate-500 text-sm font-medium">Total Acumulado do Dia:</span>
+                    <div id="modalTotalDia" class="text-2xl font-black text-indigo-600">R$ 0,00</div>
+                </div>
+                <button id="closeModalBtn" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors">
                     Fechar
                 </button>
             </div>
@@ -165,32 +193,29 @@
         let compras = []; 
 
         // Recuperar dados salvos no localStorage ao iniciar
-        const comprasSalvas = localStorage.getItem('compras_calendario');
+        const comprasSalvas = localStorage.getItem('compras_calendario_avancado');
         
         if (comprasSalvas) {
-            // Se já existirem dados salvos, usa eles
             compras = JSON.parse(comprasSalvas);
         } else {
-            // Se for a primeira vez, carrega os dados de exemplo e salva
-            const hojeIso = currentDate.toISOString().split('T')[0];
-            const amanha = new Date(currentDate);
-            amanha.setDate(currentDate.getDate() + 2);
-            const amanhaIso = amanha.toISOString().split('T')[0];
-
-            compras.push({
-                id: Date.now().toString(),
-                data: hojeIso,
-                fornecedor: 'Atacadão das Embalagens',
-                produto: '100x Caixas de Papelão P, 50x Fitas Adesivas'
-            });
-            compras.push({
-                id: (Date.now() + 1).toString(),
-                data: amanhaIso,
-                fornecedor: 'Tech Solutions',
-                produto: '5x Monitores 24", 10x Teclados'
-            });
-            
-            salvarDados();
+            // Migração de dados antigos se existirem, ou dados de exemplo
+            const comprasAntigas = localStorage.getItem('compras_calendario');
+            if(comprasAntigas) {
+                compras = JSON.parse(comprasAntigas);
+            } else {
+                const hojeIso = currentDate.toISOString().split('T')[0];
+                compras.push({
+                    id: Date.now().toString(),
+                    data: hojeIso,
+                    fornecedor: 'Distribuidora Exemplo',
+                    produtos: [
+                        { nome: 'Frigideiras Antiaderentes', quantidade: 30, valor: 1500.00 }
+                    ],
+                    logistica: { nome: 'Apenas Embalagem', valor: 2.00 },
+                    valorTotal: 1502.00
+                });
+                salvarDados();
+            }
         }
 
         // --- Elementos do DOM ---
@@ -198,66 +223,139 @@
         const calendarGridEl = document.getElementById('calendarGrid');
         const formCompra = document.getElementById('purchaseForm');
         const totalPedidosMesEl = document.getElementById('totalPedidosMes');
+        const totalValorMesEl = document.getElementById('totalValorMes');
         
-        // Modal Elementos
         const modal = document.getElementById('dayModal');
         const modalTitle = document.getElementById('modalTitle');
+        const modalSubtitle = document.getElementById('modalSubtitle');
         const modalContent = document.getElementById('modalContent');
+        const modalTotalDia = document.getElementById('modalTotalDia');
         const closeModalBtns = [document.getElementById('closeModal'), document.getElementById('closeModalBtn')];
 
-        // --- Nomes em Português ---
-        const meses = [
-            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
-            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-        ];
+        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const formatadorMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-        // --- Funções Principais ---
-
+        // --- Inicialização ---
         function init() {
-            // Define o input de data no formulário para hoje
             document.getElementById('dataCompra').value = currentDate.toISOString().split('T')[0];
-            
             renderCalendar();
             setupEventListeners();
+            calcularTotalForm(); // Inicializa o display com 0
         }
 
-        // Função para salvar as compras no navegador permanentemente
         function salvarDados() {
-            localStorage.setItem('compras_calendario', JSON.stringify(compras));
+            localStorage.setItem('compras_calendario_avancado', JSON.stringify(compras));
         }
 
+        // --- Lógica do Formulário ---
+        function calcularTotalForm() {
+            let total = 0;
+            
+            // Soma valor dos produtos
+            document.querySelectorAll('.prod-valor').forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            
+            // Adiciona valor da logística
+            const logisticaSelect = document.getElementById('logistica');
+            total += parseFloat(logisticaSelect.value) || 0;
+            
+            // Atualiza UI
+            document.getElementById('displayTotalForm').textContent = formatadorMoeda.format(total);
+            return total;
+        }
+
+        function handleAddPurchase(e) {
+            e.preventDefault();
+
+            // Coleta Produtos
+            const itens = [];
+            document.querySelectorAll('.produto-item').forEach(item => {
+                const nome = item.querySelector('.prod-nome').value;
+                const qtd = item.querySelector('.prod-qtd').value;
+                const valor = parseFloat(item.querySelector('.prod-valor').value) || 0;
+                if(nome && qtd) {
+                    itens.push({ nome, quantidade: parseInt(qtd), valor });
+                }
+            });
+
+            // Coleta Logística
+            const logisticaSelect = document.getElementById('logistica');
+            const logisticaOpcao = logisticaSelect.options[logisticaSelect.selectedIndex];
+
+            const novaCompra = {
+                id: Date.now().toString(),
+                data: document.getElementById('dataCompra').value,
+                fornecedor: document.getElementById('fornecedor').value,
+                produtos: itens,
+                logistica: {
+                    nome: logisticaOpcao.getAttribute('data-nome'),
+                    valor: parseFloat(logisticaOpcao.value) || 0
+                },
+                valorTotal: calcularTotalForm()
+            };
+
+            compras.push(novaCompra);
+            salvarDados();
+            
+            // Limpa o formulário (mantém apenas 1 linha de produto e data)
+            document.getElementById('fornecedor').value = '';
+            document.getElementById('logistica').value = "0";
+            
+            const produtosList = document.getElementById('produtosList');
+            const linhasProdutos = produtosList.querySelectorAll('.produto-item');
+            for(let i = 1; i < linhasProdutos.length; i++) {
+                linhasProdutos[i].remove();
+            }
+            linhasProdutos[0].querySelector('.prod-nome').value = '';
+            linhasProdutos[0].querySelector('.prod-qtd').value = '';
+            linhasProdutos[0].querySelector('.prod-valor').value = '';
+            
+            calcularTotalForm();
+            renderCalendar();
+
+            // Feedback Visual
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-check-circle text-xl"></i> Salvo com sucesso!';
+            btn.classList.replace('bg-indigo-600', 'bg-emerald-500');
+            btn.classList.replace('hover:bg-indigo-700', 'hover:bg-emerald-600');
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.classList.replace('bg-emerald-500', 'bg-indigo-600');
+                btn.classList.replace('hover:bg-emerald-600', 'hover:bg-indigo-700');
+            }, 2000);
+        }
+
+        // --- Lógica do Calendário ---
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
 
-            // Atualiza cabeçalho (ex: Abril 2026)
             mesAnoAtualEl.textContent = `${meses[month]} ${year}`;
-
             calendarGridEl.innerHTML = '';
 
-            // Dados do mês
-            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 (Dom) a 6 (Sáb)
-            const daysInMonth = new Date(year, month + 1, 0).getDate(); // Quantidade de dias no mês
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
             const daysInPrevMonth = new Date(year, month, 0).getDate();
 
-            // Renderiza dias do mês anterior para preencher a primeira semana
             for (let i = firstDayOfMonth - 1; i >= 0; i--) {
-                const day = daysInPrevMonth - i;
-                calendarGridEl.appendChild(createDayCell(year, month - 1, day, true));
+                calendarGridEl.appendChild(createDayCell(year, month - 1, daysInPrevMonth - i, true));
             }
 
-            // Renderiza dias do mês atual
             let totalPedidosDesteMes = 0;
+            let valorTotalDesteMes = 0;
+
             for (let day = 1; day <= daysInMonth; day++) {
                 const cellInfo = createDayCell(year, month, day, false);
                 calendarGridEl.appendChild(cellInfo.element);
                 totalPedidosDesteMes += cellInfo.comprasCount;
+                valorTotalDesteMes += cellInfo.valorDia;
             }
 
-            // Atualiza o resumo
             totalPedidosMesEl.textContent = totalPedidosDesteMes;
+            totalValorMesEl.textContent = formatadorMoeda.format(valorTotalDesteMes);
 
-            // Renderiza dias do próximo mês para completar a grade (sempre múltiplas de 7)
             const totalCells = firstDayOfMonth + daysInMonth;
             const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
             
@@ -267,159 +365,150 @@
         }
 
         function createDayCell(year, month, day, isOtherMonth) {
-            // Ajusta o ano e mês caso venha de month-1 ou month+1
             const cellDate = new Date(year, month, day);
             const actualYear = cellDate.getFullYear();
             const actualMonth = cellDate.getMonth();
-            
-            // Formata a data para YYYY-MM-DD para comparar com as compras
             const dateString = `${actualYear}-${String(actualMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             
-            // Verifica se é hoje
             const hoje = new Date();
-            const isToday = !isOtherMonth && 
-                            day === hoje.getDate() && 
-                            actualMonth === hoje.getMonth() && 
-                            actualYear === hoje.getFullYear();
+            const isToday = !isOtherMonth && day === hoje.getDate() && actualMonth === hoje.getMonth() && actualYear === hoje.getFullYear();
 
-            // Filtra as compras deste dia
             const comprasDoDia = compras.filter(c => c.data === dateString);
+            let valorTotalDoDia = 0;
+            comprasDoDia.forEach(c => valorTotalDoDia += (c.valorTotal || 0));
 
-            // Cria o elemento da célula
             const cell = document.createElement('div');
-            cell.className = `calendar-cell bg-white p-2 flex flex-col gap-1 transition-colors relative 
-                             ${isOtherMonth ? 'text-slate-400 bg-slate-50/50' : 'text-slate-700'} 
-                             ${!isOtherMonth ? 'hover:bg-slate-50 cursor-pointer' : ''}`;
+            cell.className = `calendar-cell bg-white p-2 flex flex-col gap-1 transition-all relative group
+                             ${isOtherMonth ? 'text-slate-400 bg-slate-50/50' : 'text-slate-700 hover:shadow-md hover:z-10 cursor-pointer border border-transparent hover:border-indigo-200'} `;
             
-            // Estiliza o número do dia
             const dayNumberClasses = isToday 
-                ? 'bg-indigo-600 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm mb-1 shadow-sm'
-                : 'font-semibold text-sm mb-1 w-7 h-7 flex items-center justify-center';
+                ? 'bg-indigo-600 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shadow-md'
+                : 'font-bold text-slate-500 text-sm w-7 h-7 flex items-center justify-center';
 
-            cell.innerHTML = `<div class="${dayNumberClasses}">${day}</div>`;
+            cell.innerHTML = `<div class="flex justify-between items-start mb-1">
+                                <div class="${dayNumberClasses}">${day}</div>
+                                ${valorTotalDoDia > 0 && !isOtherMonth ? `<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">${formatadorMoeda.format(valorTotalDoDia)}</span>` : ''}
+                              </div>`;
 
-            // Adiciona as compras na célula (máximo 2 para não quebrar o layout, resto fica como "+X")
             const maxVisible = 2;
             const comprasContainer = document.createElement('div');
-            comprasContainer.className = 'flex flex-col gap-1 overflow-hidden custom-scrollbar';
+            comprasContainer.className = 'flex flex-col gap-1.5 overflow-hidden';
 
             comprasDoDia.slice(0, maxVisible).forEach(compra => {
                 const tag = document.createElement('div');
-                // Cores alternadas baseadas no nome (simples hash)
-                const colors = ['bg-blue-100 text-blue-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700', 'bg-purple-100 text-purple-700'];
+                const colors = ['bg-indigo-50 border-indigo-100 text-indigo-700', 'bg-emerald-50 border-emerald-100 text-emerald-700', 'bg-amber-50 border-amber-100 text-amber-700'];
                 const colorIdx = compra.fornecedor.length % colors.length;
                 
-                tag.className = `text-[11px] px-1.5 py-1 rounded truncate border border-transparent shadow-sm ${colors[colorIdx]}`;
-                tag.title = `${compra.fornecedor}: ${compra.produto}`;
-                tag.innerHTML = `<span class="font-bold">${compra.fornecedor}</span>`;
+                // Pega a qtd do primeiro item para dar ideia na miniatura
+                const desc = compra.produtos ? `${compra.produtos[0].quantidade}x ${compra.produtos[0].nome}` : compra.produto;
+                
+                tag.className = `text-[11px] p-1.5 rounded border shadow-sm leading-tight ${colors[colorIdx]}`;
+                tag.innerHTML = `<div class="font-bold truncate">${compra.fornecedor}</div><div class="truncate opacity-80 text-[10px]">${desc}</div>`;
                 comprasContainer.appendChild(tag);
             });
 
             if (comprasDoDia.length > maxVisible) {
                 const moreTag = document.createElement('div');
-                moreTag.className = 'text-[10px] text-slate-500 font-medium px-1';
-                moreTag.textContent = `+${comprasDoDia.length - maxVisible} itens`;
+                moreTag.className = 'text-xs text-slate-500 font-bold px-1 text-center bg-slate-100 rounded py-0.5';
+                moreTag.textContent = `+${comprasDoDia.length - maxVisible} pedidos`;
                 comprasContainer.appendChild(moreTag);
             }
 
             cell.appendChild(comprasContainer);
 
-            // Evento de clique na célula (apenas para dias do mês atual)
             if (!isOtherMonth) {
-                cell.addEventListener('click', () => openDayModal(dateString, day, actualMonth, actualYear, comprasDoDia));
+                cell.addEventListener('click', () => openDayModal(dateString, day, actualMonth, actualYear, comprasDoDia, valorTotalDoDia));
             }
 
-            return isOtherMonth ? cell : { element: cell, comprasCount: comprasDoDia.length };
+            return isOtherMonth ? cell : { element: cell, comprasCount: comprasDoDia.length, valorDia: valorTotalDoDia };
         }
 
-        // --- Funções do Formulário ---
-
-        function handleAddPurchase(e) {
-            e.preventDefault();
-
-            const dataCompra = document.getElementById('dataCompra').value;
-            const fornecedor = document.getElementById('fornecedor').value;
-            const produto = document.getElementById('produto').value;
-
-            const novaCompra = {
-                id: Date.now().toString(),
-                data: dataCompra,
-                fornecedor: fornecedor,
-                produto: produto
-            };
-
-            compras.push(novaCompra);
-            salvarDados(); // <--- Salva no LocalStorage assim que adicionar
-            
-            // Limpa os campos de texto, mantém a data
-            document.getElementById('fornecedor').value = '';
-            document.getElementById('produto').value = '';
-            
-            // Foca de volta no fornecedor para entradas rápidas
-            document.getElementById('fornecedor').focus();
-
-            // Re-renderiza o calendário para mostrar a nova compra
-            renderCalendar();
-
-            // Pequeno feedback visual no botão
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="ph ph-check-circle text-lg"></i> Salvo!';
-            btn.classList.replace('bg-indigo-600', 'bg-emerald-500');
-            btn.classList.replace('hover:bg-indigo-700', 'hover:bg-emerald-600');
-            
-            setTimeout(() => {
-                btn.innerHTML = originalHtml;
-                btn.classList.replace('bg-emerald-500', 'bg-indigo-600');
-                btn.classList.replace('hover:bg-emerald-600', 'hover:bg-indigo-700');
-            }, 2000);
-        }
-
-        // --- Funções do Modal ---
-
+        // --- Lógica do Modal ---
         function deletarCompra(id, dateString, day, month, year) {
-            if (confirm('Tem certeza que deseja excluir esta compra?')) {
-                // Remove a compra do array principal
+            if (confirm('Tem certeza que deseja excluir este recibo de compra?')) {
                 compras = compras.filter(compra => compra.id !== id);
-                
-                salvarDados(); // <--- Salva no LocalStorage logo após remover
-
-                // Re-renderiza o calendário para atualizar os números e etiquetas
+                salvarDados();
                 renderCalendar();
                 
-                // Filtra novamente as compras do dia para atualizar a visualização do modal
                 const comprasRestantes = compras.filter(c => c.data === dateString);
-                openDayModal(dateString, day, month, year, comprasRestantes);
+                let novoTotal = 0;
+                comprasRestantes.forEach(c => novoTotal += (c.valorTotal || 0));
+                
+                if(comprasRestantes.length === 0) {
+                    closeModalHandler();
+                } else {
+                    openDayModal(dateString, day, month, year, comprasRestantes, novoTotal);
+                }
             }
         }
 
-        function openDayModal(dateString, day, month, year, comprasDoDia) {
-            modalTitle.textContent = `Compras: ${day} de ${meses[month]} de ${year}`;
+        function openDayModal(dateString, day, month, year, comprasDoDia, valorTotalDoDia) {
+            modalTitle.textContent = `${day} de ${meses[month]}`;
+            modalSubtitle.textContent = `Detalhamento de compras para esta data`;
+            modalTotalDia.textContent = formatadorMoeda.format(valorTotalDoDia);
             
             if (comprasDoDia.length === 0) {
                 modalContent.innerHTML = `
-                    <div class="text-center py-8 text-slate-500 flex flex-col items-center">
-                        <i class="ph ph-calendar-x text-4xl mb-2 opacity-50"></i>
-                        <p>Nenhuma compra agendada para este dia.</p>
+                    <div class="text-center py-10 flex flex-col items-center">
+                        <div class="bg-slate-100 p-4 rounded-full mb-3 text-slate-400">
+                            <i class="ph ph-calendar-x text-4xl"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium">Nenhuma compra agendada.</p>
                     </div>`;
             } else {
                 let html = '';
                 comprasDoDia.forEach(compra => {
+                    // Monta lista de produtos
+                    let produtosHtml = '';
+                    if (compra.produtos && compra.produtos.length > 0) {
+                        compra.produtos.forEach(p => {
+                            produtosHtml += `
+                            <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 text-sm">
+                                <div class="flex gap-2 items-center">
+                                    <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-bold">${p.quantidade}x</span>
+                                    <span class="text-slate-700">${p.nome}</span>
+                                </div>
+                                <span class="font-bold text-slate-800">${formatadorMoeda.format(p.valor)}</span>
+                            </div>`;
+                        });
+                    } else if(compra.produto) { // Legado
+                        produtosHtml = `<div class="py-2 text-sm text-slate-600">${compra.produto}</div>`;
+                    }
+
+                    // Monta Logística
+                    let logisticaHtml = '';
+                    if (compra.logistica && compra.logistica.valor > 0) {
+                        logisticaHtml = `
+                            <div class="flex justify-between items-center py-2 px-3 mt-2 bg-amber-50 rounded text-sm border border-amber-100">
+                                <span class="text-amber-800 flex items-center gap-1.5"><i class="ph ph-truck"></i> Logística: ${compra.logistica.nome}</span>
+                                <span class="font-bold text-amber-900">+ ${formatadorMoeda.format(compra.logistica.valor)}</span>
+                            </div>`;
+                    }
+
+                    // Total do Recibo
+                    const valorTotalExibicao = formatadorMoeda.format(compra.valorTotal || 0);
+
                     html += `
-                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 relative">
-                            <div class="flex items-start gap-3">
-                                <div class="bg-indigo-100 p-2 rounded-md text-indigo-600 mt-1">
-                                    <i class="ph ph-shopping-cart text-xl"></i>
-                                </div>
-                                <div class="flex-1 pr-8">
-                                    <h4 class="font-bold text-slate-800 text-lg">${compra.fornecedor}</h4>
-                                    <p class="text-sm text-slate-600 mt-1"><span class="font-medium text-slate-700">Produto(s):</span> ${compra.produto}</p>
-                                </div>
-                                <button onclick="deletarCompra('${compra.id}', '${dateString}', ${day}, ${month}, ${year})" 
-                                    class="absolute top-3 right-3 text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors" 
-                                    title="Excluir Compra">
-                                    <i class="ph ph-trash text-xl"></i>
-                                </button>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative mb-4">
+                            <button onclick="deletarCompra('${compra.id}', '${dateString}', ${day}, ${month}, ${year})" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors" title="Excluir Compra">
+                                <i class="ph ph-trash text-lg"></i>
+                            </button>
+                            
+                            <div class="flex items-center gap-2 mb-3 pr-10">
+                                <div class="bg-indigo-100 text-indigo-600 p-2 rounded-lg"><i class="ph ph-storefront text-xl"></i></div>
+                                <h4 class="font-black text-slate-800 text-lg uppercase tracking-wide">${compra.fornecedor}</h4>
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-3">
+                                <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Itens</h5>
+                                ${produtosHtml}
+                            </div>
+                            
+                            ${logisticaHtml}
+
+                            <div class="mt-4 pt-3 border-t border-slate-200 flex justify-between items-center">
+                                <span class="text-slate-500 font-bold uppercase text-xs tracking-wider">Total Fornecedor</span>
+                                <span class="text-xl font-black text-indigo-700">${valorTotalExibicao}</span>
                             </div>
                         </div>
                     `;
@@ -438,37 +527,35 @@
 
         // --- Event Listeners ---
         function setupEventListeners() {
-            // Controles do Mês
-            document.getElementById('btnPrevMonth').addEventListener('click', () => {
-                currentDate.setMonth(currentDate.getMonth() - 1);
-                renderCalendar();
+            document.getElementById('btnPrevMonth').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
+            document.getElementById('btnNextMonth').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
+            document.getElementById('btnHoje').addEventListener('click', () => { currentDate = new Date(); renderCalendar(); });
+
+            // Adicionar novo campo de produto
+            document.getElementById('btnAddProduto').addEventListener('click', () => {
+                const container = document.getElementById('produtosList');
+                const newItem = document.createElement('div');
+                newItem.className = 'produto-item flex flex-wrap sm:flex-nowrap gap-2 items-center mt-2 pt-2 border-t border-slate-200';
+                newItem.innerHTML = `
+                    <input type="text" class="prod-nome flex-1 min-w-[120px] px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Nome do Item" required>
+                    <input type="number" class="prod-qtd w-20 px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Qtd" min="1" required>
+                    <div class="relative w-28">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-500 text-xs font-bold">R$</span>
+                        <input type="number" class="prod-valor w-full pl-7 pr-2 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="0.00" step="0.01" min="0" required oninput="calcularTotalForm()">
+                    </div>
+                    <button type="button" class="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded transition-colors" onclick="this.parentElement.remove(); calcularTotalForm();" title="Remover item">
+                        <i class="ph ph-trash font-bold text-lg"></i>
+                    </button>
+                `;
+                container.appendChild(newItem);
             });
 
-            document.getElementById('btnNextMonth').addEventListener('click', () => {
-                currentDate.setMonth(currentDate.getMonth() + 1);
-                renderCalendar();
-            });
-
-            document.getElementById('btnHoje').addEventListener('click', () => {
-                currentDate = new Date();
-                renderCalendar();
-            });
-
-            // Formulário
             formCompra.addEventListener('submit', handleAddPurchase);
-
-            // Fechar Modal
             closeModalBtns.forEach(btn => btn.addEventListener('click', closeModalHandler));
-            
-            // Fechar modal clicando fora
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) closeModalHandler();
-            });
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModalHandler(); });
         }
 
-        // Inicializa a aplicação
         window.addEventListener('DOMContentLoaded', init);
-
     </script>
 </body>
 </html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário de Compras</title>
+    <!-- Importando Tailwind CSS para estilização rápida e moderna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importando Phosphor Icons para os ícones -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Estilos customizados para a barra de rolagem do calendário */
+        .calendar-cell {
+            min-height: 100px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        /* Efeito de fade in para o modal */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-animate {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Cabeçalho -->
+    <header class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
+            <i class="ph ph-calendar-check text-3xl"></i>
+            <h1 class="text-2xl font-bold">Gestão de Compras com Fornecedores</h1>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Painel Lateral: Formulário de Nova Compra -->
+        <section class="lg:col-span-4 space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-700">
+                    <i class="ph ph-plus-circle text-2xl"></i>
+                    Agendar Nova Compra
+                </h2>
+                
+                <form id="purchaseForm" class="space-y-4">
+                    <div>
+                        <label for="dataCompra" class="block text-sm font-medium text-slate-700 mb-1">Data da Compra</label>
+                        <input type="date" id="dataCompra" required
+                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                    </div>
+
+                    <div>
+                        <label for="fornecedor" class="block text-sm font-medium text-slate-700 mb-1">Fornecedor</label>
+                        <!-- Usando datalist para permitir digitação livre ou seleção de opções anteriores -->
+                        <input type="text" id="fornecedor" list="listaFornecedores" placeholder="Ex: Distribuidora XYZ" required
+                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <datalist id="listaFornecedores">
+                            <option value="Atacadão das Embalagens">
+                            <option value="Tech Solutions">
+                            <option value="Distribuidora Central">
+                            <option value="Móveis & Cia">
+                        </datalist>
+                    </div>
+
+                    <div>
+                        <label for="produto" class="block text-sm font-medium text-slate-700 mb-1">Produto(s)</label>
+                        <input type="text" id="produto" placeholder="Ex: 50x Caixas de Papelão" required
+                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                    </div>
+
+                    <button type="submit" 
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2">
+                        <i class="ph ph-floppy-disk text-lg"></i>
+                        Salvar no Calendário
+                    </button>
+                </form>
+            </div>
+
+            <!-- Resumo Rápido -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-semibold mb-3 text-slate-800">Resumo do Mês</h3>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span class="text-slate-600">Total de Pedidos</span>
+                    <span id="totalPedidosMes" class="font-bold text-indigo-600 text-lg">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Painel Principal: Calendário -->
+        <section class="lg:col-span-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+            
+            <!-- Controles do Calendário -->
+            <div class="flex items-center justify-between mb-6">
+                <h2 id="mesAnoAtual" class="text-2xl font-bold text-slate-800 capitalize">Abril 2026</h2>
+                <div class="flex gap-2">
+                    <button id="btnPrevMonth" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors">
+                        <i class="ph ph-caret-left text-xl"></i>
+                    </button>
+                    <button id="btnHoje" class="px-4 py-2 rounded-lg hover:bg-slate-100 text-slate-700 font-medium transition-colors border border-slate-200">
+                        Hoje
+                    </button>
+                    <button id="btnNextMonth" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors">
+                        <i class="ph ph-caret-right text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grade do Calendário -->
+            <div class="flex-grow">
+                <!-- Dias da Semana -->
+                <div class="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-t-lg overflow-hidden">
+                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Dom</div>
+                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Seg</div>
+                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Ter</div>
+                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Qua</div>
+                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Qui</div>
+                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Sex</div>
+                    <div class="bg-slate-50 py-2 text-center text-sm font-semibold text-slate-500">Sáb</div>
+                </div>
+                <!-- Células dos Dias -->
+                <div id="calendarGrid" class="grid grid-cols-7 gap-px bg-slate-200 border-x border-b border-slate-200 rounded-b-lg">
+                    <!-- Gerado via JavaScript -->
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Modal de Detalhes do Dia -->
+    <div id="dayModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full modal-animate">
+            <div class="flex items-center justify-between p-5 border-b border-slate-100">
+                <h3 id="modalTitle" class="text-xl font-bold text-slate-800">Compras do dia</h3>
+                <button id="closeModal" class="p-1 rounded-md hover:bg-slate-100 text-slate-500 transition-colors">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+            <div id="modalContent" class="p-5 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-3">
+                <!-- Conteúdo gerado via JS -->
+            </div>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-end">
+                <button id="closeModalBtn" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition-colors">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts da Aplicação -->
+    <script>
+        // --- Estado da Aplicação ---
+        let currentDate = new Date(); 
+        let compras = []; 
+
+        // Recuperar dados salvos no localStorage ao iniciar
+        const comprasSalvas = localStorage.getItem('compras_calendario');
+        
+        if (comprasSalvas) {
+            // Se já existirem dados salvos, usa eles
+            compras = JSON.parse(comprasSalvas);
+        } else {
+            // Se for a primeira vez, carrega os dados de exemplo e salva
+            const hojeIso = currentDate.toISOString().split('T')[0];
+            const amanha = new Date(currentDate);
+            amanha.setDate(currentDate.getDate() + 2);
+            const amanhaIso = amanha.toISOString().split('T')[0];
+
+            compras.push({
+                id: Date.now().toString(),
+                data: hojeIso,
+                fornecedor: 'Atacadão das Embalagens',
+                produto: '100x Caixas de Papelão P, 50x Fitas Adesivas'
+            });
+            compras.push({
+                id: (Date.now() + 1).toString(),
+                data: amanhaIso,
+                fornecedor: 'Tech Solutions',
+                produto: '5x Monitores 24", 10x Teclados'
+            });
+            
+            salvarDados();
+        }
+
+        // --- Elementos do DOM ---
+        const mesAnoAtualEl = document.getElementById('mesAnoAtual');
+        const calendarGridEl = document.getElementById('calendarGrid');
+        const formCompra = document.getElementById('purchaseForm');
+        const totalPedidosMesEl = document.getElementById('totalPedidosMes');
+        
+        // Modal Elementos
+        const modal = document.getElementById('dayModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const closeModalBtns = [document.getElementById('closeModal'), document.getElementById('closeModalBtn')];
+
+        // --- Nomes em Português ---
+        const meses = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+
+        // --- Funções Principais ---
+
+        function init() {
+            // Define o input de data no formulário para hoje
+            document.getElementById('dataCompra').value = currentDate.toISOString().split('T')[0];
+            
+            renderCalendar();
+            setupEventListeners();
+        }
+
+        // Função para salvar as compras no navegador permanentemente
+        function salvarDados() {
+            localStorage.setItem('compras_calendario', JSON.stringify(compras));
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Atualiza cabeçalho (ex: Abril 2026)
+            mesAnoAtualEl.textContent = `${meses[month]} ${year}`;
+
+            calendarGridEl.innerHTML = '';
+
+            // Dados do mês
+            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 (Dom) a 6 (Sáb)
+            const daysInMonth = new Date(year, month + 1, 0).getDate(); // Quantidade de dias no mês
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            // Renderiza dias do mês anterior para preencher a primeira semana
+            for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                calendarGridEl.appendChild(createDayCell(year, month - 1, day, true));
+            }
+
+            // Renderiza dias do mês atual
+            let totalPedidosDesteMes = 0;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cellInfo = createDayCell(year, month, day, false);
+                calendarGridEl.appendChild(cellInfo.element);
+                totalPedidosDesteMes += cellInfo.comprasCount;
+            }
+
+            // Atualiza o resumo
+            totalPedidosMesEl.textContent = totalPedidosDesteMes;
+
+            // Renderiza dias do próximo mês para completar a grade (sempre múltiplas de 7)
+            const totalCells = firstDayOfMonth + daysInMonth;
+            const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+            
+            for (let day = 1; day <= remainingCells; day++) {
+                calendarGridEl.appendChild(createDayCell(year, month + 1, day, true));
+            }
+        }
+
+        function createDayCell(year, month, day, isOtherMonth) {
+            // Ajusta o ano e mês caso venha de month-1 ou month+1
+            const cellDate = new Date(year, month, day);
+            const actualYear = cellDate.getFullYear();
+            const actualMonth = cellDate.getMonth();
+            
+            // Formata a data para YYYY-MM-DD para comparar com as compras
+            const dateString = `${actualYear}-${String(actualMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            // Verifica se é hoje
+            const hoje = new Date();
+            const isToday = !isOtherMonth && 
+                            day === hoje.getDate() && 
+                            actualMonth === hoje.getMonth() && 
+                            actualYear === hoje.getFullYear();
+
+            // Filtra as compras deste dia
+            const comprasDoDia = compras.filter(c => c.data === dateString);
+
+            // Cria o elemento da célula
+            const cell = document.createElement('div');
+            cell.className = `calendar-cell bg-white p-2 flex flex-col gap-1 transition-colors relative 
+                             ${isOtherMonth ? 'text-slate-400 bg-slate-50/50' : 'text-slate-700'} 
+                             ${!isOtherMonth ? 'hover:bg-slate-50 cursor-pointer' : ''}`;
+            
+            // Estiliza o número do dia
+            const dayNumberClasses = isToday 
+                ? 'bg-indigo-600 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm mb-1 shadow-sm'
+                : 'font-semibold text-sm mb-1 w-7 h-7 flex items-center justify-center';
+
+            cell.innerHTML = `<div class="${dayNumberClasses}">${day}</div>`;
+
+            // Adiciona as compras na célula (máximo 2 para não quebrar o layout, resto fica como "+X")
+            const maxVisible = 2;
+            const comprasContainer = document.createElement('div');
+            comprasContainer.className = 'flex flex-col gap-1 overflow-hidden custom-scrollbar';
+
+            comprasDoDia.slice(0, maxVisible).forEach(compra => {
+                const tag = document.createElement('div');
+                // Cores alternadas baseadas no nome (simples hash)
+                const colors = ['bg-blue-100 text-blue-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700', 'bg-purple-100 text-purple-700'];
+                const colorIdx = compra.fornecedor.length % colors.length;
+                
+                tag.className = `text-[11px] px-1.5 py-1 rounded truncate border border-transparent shadow-sm ${colors[colorIdx]}`;
+                tag.title = `${compra.fornecedor}: ${compra.produto}`;
+                tag.innerHTML = `<span class="font-bold">${compra.fornecedor}</span>`;
+                comprasContainer.appendChild(tag);
+            });
+
+            if (comprasDoDia.length > maxVisible) {
+                const moreTag = document.createElement('div');
+                moreTag.className = 'text-[10px] text-slate-500 font-medium px-1';
+                moreTag.textContent = `+${comprasDoDia.length - maxVisible} itens`;
+                comprasContainer.appendChild(moreTag);
+            }
+
+            cell.appendChild(comprasContainer);
+
+            // Evento de clique na célula (apenas para dias do mês atual)
+            if (!isOtherMonth) {
+                cell.addEventListener('click', () => openDayModal(dateString, day, actualMonth, actualYear, comprasDoDia));
+            }
+
+            return isOtherMonth ? cell : { element: cell, comprasCount: comprasDoDia.length };
+        }
+
+        // --- Funções do Formulário ---
+
+        function handleAddPurchase(e) {
+            e.preventDefault();
+
+            const dataCompra = document.getElementById('dataCompra').value;
+            const fornecedor = document.getElementById('fornecedor').value;
+            const produto = document.getElementById('produto').value;
+
+            const novaCompra = {
+                id: Date.now().toString(),
+                data: dataCompra,
+                fornecedor: fornecedor,
+                produto: produto
+            };
+
+            compras.push(novaCompra);
+            salvarDados(); // <--- Salva no LocalStorage assim que adicionar
+            
+            // Limpa os campos de texto, mantém a data
+            document.getElementById('fornecedor').value = '';
+            document.getElementById('produto').value = '';
+            
+            // Foca de volta no fornecedor para entradas rápidas
+            document.getElementById('fornecedor').focus();
+
+            // Re-renderiza o calendário para mostrar a nova compra
+            renderCalendar();
+
+            // Pequeno feedback visual no botão
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-check-circle text-lg"></i> Salvo!';
+            btn.classList.replace('bg-indigo-600', 'bg-emerald-500');
+            btn.classList.replace('hover:bg-indigo-700', 'hover:bg-emerald-600');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.classList.replace('bg-emerald-500', 'bg-indigo-600');
+                btn.classList.replace('hover:bg-emerald-600', 'hover:bg-indigo-700');
+            }, 2000);
+        }
+
+        // --- Funções do Modal ---
+
+        function deletarCompra(id, dateString, day, month, year) {
+            if (confirm('Tem certeza que deseja excluir esta compra?')) {
+                // Remove a compra do array principal
+                compras = compras.filter(compra => compra.id !== id);
+                
+                salvarDados(); // <--- Salva no LocalStorage logo após remover
+
+                // Re-renderiza o calendário para atualizar os números e etiquetas
+                renderCalendar();
+                
+                // Filtra novamente as compras do dia para atualizar a visualização do modal
+                const comprasRestantes = compras.filter(c => c.data === dateString);
+                openDayModal(dateString, day, month, year, comprasRestantes);
+            }
+        }
+
+        function openDayModal(dateString, day, month, year, comprasDoDia) {
+            modalTitle.textContent = `Compras: ${day} de ${meses[month]} de ${year}`;
+            
+            if (comprasDoDia.length === 0) {
+                modalContent.innerHTML = `
+                    <div class="text-center py-8 text-slate-500 flex flex-col items-center">
+                        <i class="ph ph-calendar-x text-4xl mb-2 opacity-50"></i>
+                        <p>Nenhuma compra agendada para este dia.</p>
+                    </div>`;
+            } else {
+                let html = '';
+                comprasDoDia.forEach(compra => {
+                    html += `
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 relative">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-indigo-100 p-2 rounded-md text-indigo-600 mt-1">
+                                    <i class="ph ph-shopping-cart text-xl"></i>
+                                </div>
+                                <div class="flex-1 pr-8">
+                                    <h4 class="font-bold text-slate-800 text-lg">${compra.fornecedor}</h4>
+                                    <p class="text-sm text-slate-600 mt-1"><span class="font-medium text-slate-700">Produto(s):</span> ${compra.produto}</p>
+                                </div>
+                                <button onclick="deletarCompra('${compra.id}', '${dateString}', ${day}, ${month}, ${year})" 
+                                    class="absolute top-3 right-3 text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors" 
+                                    title="Excluir Compra">
+                                    <i class="ph ph-trash text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                modalContent.innerHTML = html;
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModalHandler() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            // Controles do Mês
+            document.getElementById('btnPrevMonth').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+
+            document.getElementById('btnNextMonth').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+
+            document.getElementById('btnHoje').addEventListener('click', () => {
+                currentDate = new Date();
+                renderCalendar();
+            });
+
+            // Formulário
+            formCompra.addEventListener('submit', handleAddPurchase);
+
+            // Fechar Modal
+            closeModalBtns.forEach(btn => btn.addEventListener('click', closeModalHandler));
+            
+            // Fechar modal clicando fora
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModalHandler();
+            });
+        }
+
+        // Inicializa a aplicação
+        window.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>

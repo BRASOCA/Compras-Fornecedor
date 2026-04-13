@@ -121,8 +121,16 @@
                         <span class="text-slate-600 font-medium">Qtd. de Pedidos</span>
                         <span id="totalPedidosMes" class="font-bold text-slate-800 text-lg">0</span>
                     </div>
+                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                        <span class="text-slate-500 font-medium text-sm">Gasto c/ Produtos</span>
+                        <span id="totalProdutosMes" class="font-semibold text-slate-700">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                        <span class="text-slate-500 font-medium text-sm">Custos de Logística</span>
+                        <span id="totalLogisticaMes" class="font-semibold text-amber-600">R$ 0,00</span>
+                    </div>
                     <div class="flex justify-between items-center pt-2">
-                        <span class="text-slate-600 font-medium">Gasto Estimado</span>
+                        <span class="text-slate-700 font-bold">Total Geral Estimado</span>
                         <span id="totalValorMes" class="font-black text-emerald-600 text-xl">R$ 0,00</span>
                     </div>
                 </div>
@@ -365,15 +373,21 @@
 
             let totalPedidosDesteMes = 0;
             let valorTotalDesteMes = 0;
+            let valorProdutosDesteMes = 0;
+            let valorLogisticaDesteMes = 0;
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const cellInfo = createDayCell(year, month, day, false);
                 calendarGridEl.appendChild(cellInfo.element);
                 totalPedidosDesteMes += cellInfo.comprasCount;
                 valorTotalDesteMes += cellInfo.valorDia;
+                valorProdutosDesteMes += (cellInfo.valorProdutos || 0);
+                valorLogisticaDesteMes += (cellInfo.valorLogistica || 0);
             }
 
             totalPedidosMesEl.textContent = totalPedidosDesteMes;
+            document.getElementById('totalProdutosMes').textContent = formatadorMoeda.format(valorProdutosDesteMes);
+            document.getElementById('totalLogisticaMes').textContent = formatadorMoeda.format(valorLogisticaDesteMes);
             totalValorMesEl.textContent = formatadorMoeda.format(valorTotalDesteMes);
 
             const totalCells = firstDayOfMonth + daysInMonth;
@@ -395,7 +409,20 @@
 
             const comprasDoDia = compras.filter(c => c.data === dateString);
             let valorTotalDoDia = 0;
-            comprasDoDia.forEach(c => valorTotalDoDia += (c.valorTotal || 0));
+            let valorProdutosDoDia = 0;
+            let valorLogisticaDoDia = 0;
+
+            comprasDoDia.forEach(c => {
+                valorTotalDoDia += (c.valorTotal || 0);
+                if (c.logistica && c.logistica.valorTotal) {
+                    valorLogisticaDoDia += c.logistica.valorTotal;
+                }
+                if (c.produtos) {
+                    c.produtos.forEach(p => {
+                        valorProdutosDoDia += (p.valorTotalItem || 0);
+                    });
+                }
+            });
 
             const cell = document.createElement('div');
             cell.className = `calendar-cell bg-white p-2 flex flex-col gap-1 transition-all relative group
@@ -440,7 +467,13 @@
                 cell.addEventListener('click', () => openDayModal(dateString, day, actualMonth, actualYear, comprasDoDia, valorTotalDoDia));
             }
 
-            return isOtherMonth ? cell : { element: cell, comprasCount: comprasDoDia.length, valorDia: valorTotalDoDia };
+            return isOtherMonth ? cell : { 
+                element: cell, 
+                comprasCount: comprasDoDia.length, 
+                valorDia: valorTotalDoDia,
+                valorProdutos: valorProdutosDoDia,
+                valorLogistica: valorLogisticaDoDia
+            };
         }
 
         // --- Lógica do Modal ---
